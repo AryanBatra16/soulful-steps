@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Heart, User } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +14,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { session, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        {/* Left - Hamburger Menu */}
+        {/* Left - Minimal Hamburger Menu */}
         <div className="flex items-center gap-4">
-          <SidebarTrigger />
+          <SidebarTrigger className="h-9 w-9" />
           
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 font-playfair font-semibold text-xl">
@@ -32,7 +32,7 @@ export function Header() {
 
         {/* Right - Authentication */}
         <div className="flex items-center gap-3">
-          {!isAuthenticated ? (
+          {!session ? (
             <>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/auth/sign-in">Sign In</Link>
@@ -46,7 +46,7 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="/avatars/user.png" alt="@user" />
+                    <AvatarImage src={session.avatarUrl} alt={session.name} />
                     <AvatarFallback>
                       <User className="h-4 w-4" />
                     </AvatarFallback>
@@ -56,21 +56,21 @@ export function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Sarah M.</p>
+                    <p className="text-sm font-medium leading-none">{session.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      sarah@example.com
+                      {session.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/settings">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link to="/dashboard">Dashboard</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings">Settings</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsAuthenticated(false)}>
+                <DropdownMenuItem onClick={signOut}>
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
