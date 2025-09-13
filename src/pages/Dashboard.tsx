@@ -4,50 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Calendar, MessageCircle, Trophy, Smile, TrendingUp, Quote } from "lucide-react";
+import { mockAnalytics, todaysQuote, mockMoodEntries, mockChallenges } from "@/lib/mockData";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
-import { useUserAnalytics, useMoodEntries, useChallenges, useTodaysQuote } from "@/hooks/useApi";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ErrorState } from "@/components/ui/error-state";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
-  const { session } = useAuth();
-  const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useUserAnalytics();
-  const { data: moodEntries, isLoading: moodLoading } = useMoodEntries();
-  const { data: challenges, isLoading: challengesLoading } = useChallenges();
-  const { data: todaysQuote, isLoading: quoteLoading } = useTodaysQuote();
-
-  if (!session) {
-    return (
-      <div className="container mx-auto p-6">
-        <EmptyState
-          title="Please sign in"
-          description="Sign in to view your wellness dashboard"
-          action={{ label: "Go to Sign In", onClick: () => window.location.href = "/auth/sign-in" }}
-        />
-      </div>
-    );
-  }
-
-  if (analyticsError) {
-    return (
-      <div className="container mx-auto p-6">
-        <ErrorState message="Failed to load dashboard data" />
-      </div>
-    );
-  }
-
-  const todaysMood = moodEntries?.[0];
-  const activeChallenge = challenges?.find(c => c.status === "active");
-  const firstName = session.name.split(' ')[0];
+  const analytics = mockAnalytics;
+  const todaysMood = mockMoodEntries[0];
+  const activeChallenge = mockChallenges.find(c => c.status === "active");
 
   return (
     <div className="container mx-auto p-6 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-playfair font-bold">Good morning, {firstName}!</h1>
+        <h1 className="text-3xl font-playfair font-bold">Good morning, Sarah!</h1>
         <p className="text-muted-foreground">Here's how your wellness journey is going today.</p>
       </div>
 
@@ -59,13 +28,9 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-8 w-16 mb-2" />
-            ) : (
-              <div className="text-2xl font-bold text-primary">{analytics?.currentStreak || 0}</div>
-            )}
+            <div className="text-2xl font-bold text-primary">{analytics.currentStreak}</div>
             <p className="text-xs text-muted-foreground">
-              Longest: {analytics?.longestStreak || 0} days
+              Longest: {analytics.longestStreak} days
             </p>
           </CardContent>
         </Card>
@@ -76,13 +41,9 @@ export default function Dashboard() {
             <Smile className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-8 w-16 mb-2" />
-            ) : (
-              <div className="text-2xl font-bold text-primary">{analytics?.averageMood || 0}/10</div>
-            )}
+            <div className="text-2xl font-bold text-primary">{analytics.averageMood}/10</div>
             <p className="text-xs text-muted-foreground">
-              From {analytics?.totalMoodEntries || 0} entries
+              From {analytics.totalMoodEntries} entries
             </p>
           </CardContent>
         </Card>
@@ -93,13 +54,9 @@ export default function Dashboard() {
             <Trophy className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-8 w-16 mb-2" />
-            ) : (
-              <div className="text-2xl font-bold text-primary">{analytics?.totalPoints || 0}</div>
-            )}
+            <div className="text-2xl font-bold text-primary">{analytics.totalPoints}</div>
             <p className="text-xs text-muted-foreground">
-              {analytics?.completedChallenges || 0} challenges completed
+              {analytics.completedChallenges} challenges completed
             </p>
           </CardContent>
         </Card>
@@ -107,16 +64,12 @@ export default function Dashboard() {
         <Card className="wellness-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Mood</CardTitle>
-            <div className="text-2xl">{todaysMood?.emoji || "😐"}</div>
+            <div className="text-2xl">{todaysMood?.emoji}</div>
           </CardHeader>
           <CardContent>
-            {moodLoading ? (
-              <Skeleton className="h-8 w-16 mb-2" />
-            ) : (
-              <div className="text-2xl font-bold text-primary">{todaysMood?.score || "--"}/10</div>
-            )}
+            <div className="text-2xl font-bold text-primary">{todaysMood?.score}/10</div>
             <p className="text-xs text-muted-foreground">
-              {todaysMood?.notes || "No mood logged yet"}
+              {todaysMood?.notes || "No notes yet"}
             </p>
           </CardContent>
         </Card>
@@ -152,17 +105,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Active Challenge */}
-        {challengesLoading ? (
-          <Card className="wellness-card">
-            <CardHeader>
-              <Skeleton className="h-6 w-32 mb-2" />
-              <Skeleton className="h-4 w-48" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-20 w-full" />
-            </CardContent>
-          </Card>
-        ) : activeChallenge ? (
+        {activeChallenge && (
           <Card className="wellness-card">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -187,16 +130,6 @@ export default function Dashboard() {
               </Button>
             </CardContent>
           </Card>
-        ) : (
-          <Card className="wellness-card">
-            <CardContent className="pt-6">
-              <EmptyState
-                title="No Active Challenge"
-                description="Start a new challenge to boost your wellness journey"
-                action={{ label: "Browse Challenges", onClick: () => window.location.href = "/challenges" }}
-              />
-            </CardContent>
-          </Card>
         )}
       </div>
 
@@ -208,42 +141,38 @@ export default function Dashboard() {
             <CardDescription>Your mood pattern over the last 7 days</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={analytics?.weeklyMoodTrend || []}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis 
-                    dataKey="date" 
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    domain={[1, 10]}
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="mood" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analytics.weeklyMoodTrend}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  dataKey="date" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  domain={[1, 10]}
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="mood" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
@@ -256,31 +185,17 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {quoteLoading ? (
-              <>
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-4 w-24" />
-              </>
-            ) : todaysQuote ? (
-              <>
-                <blockquote className="text-sm italic text-muted-foreground leading-relaxed">
-                  "{todaysQuote.text}"
-                </blockquote>
-                {todaysQuote.author && (
-                  <p className="text-xs font-medium text-primary">
-                    — {todaysQuote.author}
-                  </p>
-                )}
-                <Button variant="outline" size="sm" asChild className="w-full">
-                  <Link to="/quotes">Browse More Quotes</Link>
-                </Button>
-              </>
-            ) : (
-              <EmptyState
-                title="No quote available"
-                description="Check back later for inspiration"
-              />
+            <blockquote className="text-sm italic text-muted-foreground leading-relaxed">
+              "{todaysQuote.text}"
+            </blockquote>
+            {todaysQuote.author && (
+              <p className="text-xs font-medium text-primary">
+                — {todaysQuote.author}
+              </p>
             )}
+            <Button variant="outline" size="sm" asChild className="w-full">
+              <Link to="/quotes">Browse More Quotes</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

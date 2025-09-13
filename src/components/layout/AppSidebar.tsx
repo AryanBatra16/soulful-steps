@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
 import {
   Sidebar,
   SidebarContent,
@@ -10,7 +9,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -24,62 +22,73 @@ import {
   TrendingUp,
   Settings,
   Heart,
-  LogOut,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 const navigationItems = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    description: "Overview and quick actions"
   },
   {
     title: "AI Chatbot",
     url: "/chat",
     icon: MessageCircle,
+    description: "Talk with your wellness companion"
   },
   {
     title: "Daily Tracker",
     url: "/tracker",
     icon: Calendar,
+    description: "Log moods and track streaks"
   },
   {
     title: "Quotes",
     url: "/quotes",
     icon: Quote,
+    description: "Inspirational daily quotes"
   },
   {
     title: "Challenges",
     url: "/challenges",
     icon: Trophy,
+    description: "Wellness challenges and goals"
   },
   {
     title: "Tasks",
     url: "/tasks",
     icon: CheckSquare,
+    description: "Manage your wellness tasks"
   },
   {
     title: "Community",
     url: "/community",
     icon: Users,
+    description: "Connect with others"
   },
   {
     title: "Moods",
     url: "/moods",
     icon: Smile,
+    description: "Mood analytics and insights"
   },
   {
     title: "Growth Map",
     url: "/growth",
     icon: TrendingUp,
+    description: "Track your wellness journey"
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
+    description: "Preferences and account"
   },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { session, signOut } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -89,13 +98,16 @@ export function AppSidebar() {
   return (
     <Sidebar className={isCollapsed ? "w-16" : "w-64"} collapsible="icon">
       <SidebarContent className="pt-6">
-        {/* Minimal Brand */}
+        {/* Brand */}
         {!isCollapsed && (
           <div className="px-6 pb-4">
             <div className="flex items-center gap-2 font-playfair font-semibold text-lg">
               <Heart className="h-5 w-5 text-primary" />
               <span>Mind2Care</span>
             </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Your wellness companion
+            </p>
           </div>
         )}
 
@@ -120,7 +132,12 @@ export function AppSidebar() {
                     <Link to={item.url} className="flex items-center gap-3 p-3">
                       <item.icon className="h-5 w-5 flex-shrink-0" />
                       {!isCollapsed && (
-                        <span className="text-sm font-medium">{item.title}</span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{item.title}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {item.description}
+                          </span>
+                        </div>
                       )}
                     </Link>
                   </SidebarMenuButton>
@@ -130,46 +147,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      {/* Footer with user info */}
-      {session && (
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link to="/settings" className="flex items-center gap-3 p-3">
-                  <Settings className="h-5 w-5 flex-shrink-0" />
-                  {!isCollapsed && <span className="text-sm">Settings</span>}
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {!isCollapsed && (
-              <SidebarMenuItem>
-                <div className="flex items-center gap-3 p-3 border-t">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session.avatarUrl} />
-                    <AvatarFallback className="text-xs">
-                      {session.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate">{session.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{session.email}</p>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={signOut}
-                    className="h-8 w-8 p-0"
-                  >
-                    <LogOut className="h-3 w-3" />
-                  </Button>
-                </div>
-              </SidebarMenuItem>
-            )}
-          </SidebarMenu>
-        </SidebarFooter>
-      )}
     </Sidebar>
   );
 }
